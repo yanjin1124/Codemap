@@ -1,0 +1,37 @@
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>Drawline</title>
+<style type="text/css">
+body{
+ font-size:12px;
+}
+</style>
+</head>
+<script type="text/javascript">
+var dot=new Array();
+document.onmousedown =function(a) 
+{ 
+ if(document.getElementById('line_div')){
+ var clearDiv=document.getElementById("line_div");
+ clearDiv.parentNode.removeChild(clearDiv);
+ }
+ if(!a) a=window.event;
+ var x=a.clientX;
+ var y=a.clientY;
+ if(dot.length>=4) dot.splice(0,4);
+ dot.push(x,y);
+ if(dot.length==4){
+ var width=Math.abs(dot[0]-dot[2]);
+ var height=Math.abs(dot[1]-dot[3]);
+ var left=dot[0]-dot[2]<0?dot[0]:dot[2];
+ var top=dot[1]-dot[3]<0?dot[1]:dot[3];
+ var div=document.createElement("div");
+ div.innerHTML=' <div id="line_div" style="width:'+width+'px;height:'+height+'px;position:absolute;visibility:visible;left:'+left+'px;top:'+top+'px;border-left:1px solid #cdcdcd;border-top:1px solid #cdcdcd;"></div>';
+ document.body.appendChild(div);
+ }
+} 
+</script>
+<body>
+</body>
+</html>
