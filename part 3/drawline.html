@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		
+		<link rel="stylesheet" type="text/css" href="lib/css/bootstrap.min.css" />
+		<link rel="stylesheet" type="text/css" href="lib/css/bootstrap-treeview.min.css" />
+		<link rel="stylesheet" type="text/css" href="lib/css/jsplumb.css" />
+	 	<!-- Import CodeMirror core files -->
+	 	<link href="codemirror/lib/codemirror.css" rel="stylesheet" type="text/css">
+	 	<link href="codemirror/theme/monokai.css" rel="stylesheet" type="text/css">
+	 	<link href="codemirror/addon/display/fullscreen.css" rel="stylesheet" type="text/css">
+	 	<script type="text/javascript" src="codemirror/lib/codemirror.js"></script>
+   
+	 	<!-- CodeMirror supports different languages，should import the relevant js files -->
+	 	<!-- htmlmixed relays on the Javascript、XML、CSS，so all should be imported. click.js supports c++ -->
+	 	<script type="text/javascript" src="codemirror/mode/javascript/javascript.js"></script>
+	 	<script type="text/javascript" src="codemirror/mode/xml/xml.js"></script>
+	 	<script type="text/javascript" src="codemirror/mode/css/css.js"></script>
+	 	<script type="text/javascript" src="codemirror/mode/htmlmixed/htmlmixed.js"></script>
+	 	<script type="text/javascript" src="codemirror/mode/clike/clike.js"></script>
+   
+	 	<!-- others for CodeMirror -->
+	 	<script type="text/javascript" src="codemirror/addon/selection/active-line.js"></script>
+	 	<script type="text/javascript" src="codemirror/addon/edit/matchbrackets.js"></script>
+	 	<script type="text/javascript" src="codemirror/addon/display/fullscreen.js"></script>
+		<title>Draw Lines</title>
+		<style>
+		#diagramContainer {
+				padding: 20px;
+				width: 80%;
+				height: 400px;
+				border: 1px solid gray;
+				border: none;
+			}
+			.item {
+				position: absolute;
+				height: 60px;
+				width: 30px;
+				border: 1px solid blue;
+				border: none;
+			}
+		</style>
+	</head>
+	<body>
+		 <form action="mirror.html" method="get">
+			<textarea id="code" name="code">
+			#include <iostream>
+			using namespace std;
+			int main() 
+			{
+				cout << "Hello, World!";
+				return 0;
+			}
+				</textarea>
+		</form> 
+		<button onclick="add()">Add</button>
+		<button onclick="del()">Delete</button>
+		<div id="diagramContainer">
+			<div id="item_first" class="item">Start</div>
+		</div>
+
+		<script src="lib/js/jquery.js"></script>
+		<script src="lib/js/jquery-ui.js"></script>
+		<script src="lib/js/jsplumb.js"></script>
+
+		<script>
+			var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        		lineNumbers: true,     // show line sequence
+        		indentUnit: 4,         // indent
+        		styleActiveLine: false, // active the line when selecting
+        		matchBrackets: true,   // match the brackets
+        		mode: 'text/x-c++src', // c++, import the click.js to support c++ display.
+        		lineWrapping: true,    // warp automatically
+				tabSize : 4,  // Tab缩进，默认4
+        		theme: 'default',      // theme
+        		readOnly: false,        //readOnly?
+        		showCursorWhenSelecting:false,//whether to show cursor when selecting
+        		autofocus: false,//whether focus when initialize
+   			});
+			var index = 0;
+
+			function add() {
+				//Create child div in 'diagramContainer'
+				var parentDiv = document.getElementById("diagramContainer");
+				var childDiv = document.createElement("div");
+				var text = document.createTextNode("Node:" + index);
+				childDiv.appendChild(text);
+				parentDiv.appendChild(childDiv);
+				//Set attr for child div
+				$(childDiv).attr('id', index++);
+				$(childDiv).attr("class", "item");
+				//Framework jsPlumb
+				jsPlumb.ready(function() {
+					jsPlumb.setContainer('diagramContainer')
+					var common = {
+							isSource: true, //
+							isTarget: true,
+							endpoint:[ 'Rectangle',{	
+						width:10, 
+						height:10}],
+						paintStyle: {
+          				fill: 'white',
+          				outlineStroke: 'blue',
+          				strokeWidth: 3
+        				},
+							connector: ['Bezier'],
+							maxConnections: 4, //multiple connections: -1
+						}
+						//Add point for div via jsPlumb and set uuid
+					
+					jsPlumb.addEndpoint($(childDiv).attr("id"), {
+						anchors: ['Center','Continuous'],
+						uuid: $(childDiv).attr("id")
+					}, common)
+					{
+						jsPlumb.connect({
+							uuids: ['firstId', $(childDiv).attr("id")],
+							overlays: [
+								['Label', {
+									width: 12,
+									length: 12,
+									location: 0.5,
+									label: "LOL",
+									visible: true,
+               						 id: "Label"
+								}]
+							]
+						})
+					}
+					jsPlumb.draggable($(childDiv).attr("id"))
+					jsPlumb.draggable('item_middle')
+					console.log("The new div id: " + $(childDiv).attr("id"));
+				})
+			}
+
+			function del() {
+				var indexDel = 0;
+				var reg = /^[0-9]+.?[0-9]*$/;
+				var divArr = $('#diagramContainer div');
+				var childDiv = [];
+				$.each(divArr, function(i, n) {
+					if (reg.test(divArr.get(i).id)) {
+						childDiv[indexDel++] = divArr.get(i);
+					}
+				});
+				if (childDiv.length < 1) {
+					alert("No other node can be removed! Please add one in advance!")
+				} else {
+					jsPlumb.ready(function() {
+						jsPlumb.setContainer('diagramContainer')
+						jsPlumb.remove(childDiv.length - 1 + "");
+						index--;
+					})
+				}
+			}
+			/* global jsPlumb */
+			jsPlumb.ready(function() {
+				jsPlumb.setContainer('diagramContainer')
+				var common = {
+						isSource: true,
+						isTarget: true,
+						endpoint:[ 'Rectangle',{	
+						width:10, 
+						height:10}],
+						paintStyle: {
+          				fill: 'white',
+          				outlineStroke: 'blue',
+          				strokeWidth: 3
+        				},
+						connector: ['Bezier'],
+						maxConnections: 4,
+					}
+				jsPlumb.addEndpoint('item_first', {
+					anchors: ['Center','Continuous'],
+					uuid: 'firstId'
+				}, common)
+				jsPlumb.draggable('item_first')
+			})
+
+
+		</script>
+	</body>
+</html>
