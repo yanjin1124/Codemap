@@ -1,0 +1,99 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset=utf-8> 
+    <title>Draw Line</title>
+    <script src="lib/js/jquery.js"></script>
+  
+    <!-- Import CodeMirror core files -->
+    <link href="codemirror/lib/codemirror.css" rel="stylesheet" type="text/css">
+    <link href="codemirror/theme/monokai.css" rel="stylesheet" type="text/css">
+    <link href="codemirror/addon/display/fullscreen.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="codemirror/lib/codemirror.js"></script>
+  
+    <!-- CodeMirror supports different languages，should import the relevant js files -->
+    <!-- htmlmixed relays on the Javascript、XML、CSS，so all should be imported. click.js supports c++ -->
+    <script type="text/javascript" src="codemirror/mode/javascript/javascript.js"></script>
+    <script type="text/javascript" src="codemirror/mode/xml/xml.js"></script>
+    <script type="text/javascript" src="codemirror/mode/css/css.js"></script>
+    <script type="text/javascript" src="codemirror/mode/htmlmixed/htmlmixed.js"></script>
+    <script type="text/javascript" src="codemirror/mode/clike/clike.js"></script>
+  
+    <!-- others for CodeMirror -->
+    <script type="text/javascript" src="codemirror/addon/selection/active-line.js"></script>
+    <script type="text/javascript" src="codemirror/addon/edit/matchbrackets.js"></script>
+    <script type="text/javascript" src="codemirror/addon/display/fullscreen.js"></script>
+    <style type="text/css">
+        #canvasId{
+            border: 1px solid #e21c1c;
+            position: absolute;
+            top: 0;
+        }
+    </style>
+    
+    </style>
+</head>
+<body>
+
+        <form action="mirror.html" method="get">
+                <textarea id="code" name="code">
+            #include <iostream>
+            using namespace std;
+            int main() 
+            {
+                cout << "Hello, World!";
+                return 0;
+            }
+                </textarea>
+            </form> 
+        
+
+<canvas id="canvasId" width="1000" height="1000" style="background-color: #eee;"></canvas>
+<script type="text/javascript">
+var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: true,     // show line sequence
+        indentUnit: 4,         // indent
+        styleActiveLine: true, // active the line when selecting
+        matchBrackets: true,   // match the brackets
+        mode: 'text/x-c++src', // c++, import the click.js to support c++ display.
+        lineWrapping: true,    // warp automatically
+        theme: 'default',      // theme
+        readOnly: true,        //readOnly?
+        showCursorWhenSelecting:false,//whether to show cursor when selecting
+        autofocus: false,//whether focus when initialize
+    });
+var canvas = document.getElementById("canvasId");
+var ctx = canvas.getContext("2d");
+var flag = false;
+var tc = document.createElement("canvas");
+tc.width = canvas.width;
+tc.height = canvas.height;
+var tctx = tc.getContext("2d");
+var x = 0;
+var y = 0;
+canvas.onmousedown = function (e) {
+    e = e || window.event;
+    x = e.clientX - canvas.offsetLeft + (document.body.scrollLeft || document.documentElement.scrollLeft);
+    y = e.clientY - canvas.offsetTop  + (document.body.scrollTop || document.documentElement.scrollTop);
+    flag = true;
+    tctx.drawImage(canvas,0,0,canvas.width,canvas.height);
+}
+canvas.onmousemove = function (e) {
+    if (!flag) return;
+    e = e || window.event;
+    var gx = e.clientX - canvas.offsetLeft + (document.body.scrollLeft || document.documentElement.scrollLeft);
+    var gy = e.clientY - canvas.offsetTop  + (document.body.scrollTop || document.documentElement.scrollTop);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(tc,0,0,canvas.width,canvas.height);
+    ctx.beginPath();
+    ctx.moveTo(x,y);
+    ctx.lineTo(gx,gy);
+    ctx.stroke();
+}
+canvas.onmouseup = function (e) {
+    flag = false;
+}
+</script>
+</body>
+</html>
